@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "macros.html" as macro %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}
+
+{% block title %}Home{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="icon" href="{{ url_for('static', filename='socbay.ico') }}" type="image/x-icon"/>
+<link rel="shortcut icon" href="{{ url_for('static', filename='socbay.ico') }}" type="image/x-icon"/>
+{% endblock %}
+
+{% block content %}
+<style>
+  h1 {text-align: center;}
+  h2 {text-align: center;}
+  h4 {text-align: right;}
+
+</style>
+<div class="container">
+  <div class="page-header">
+    <h1>This is the basic blog post application</h1>
+    <h2>Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Stranger{% endif %}</h2>
+    {% if known %}<h2>Happy to see you again!</h2>{% else %}<h2>Nice to meet you!</h2>{% endif %}
+  </div>
+</div>
+{{ super() }}
+{% endblock %}
+
+
+{% block page_content %}
+<div>
+  {% if current_user.can_do(Permission.WRITE) %}
+  {{ wtf.quick_form(form) }}
+  {% endif %}
+</div>
+<table>
+  {% for post in posts %}
+  {% include '_post.html' %}
+  {% endfor %}
+</table>
+<div class="pagination">
+  {{ macro.pagination_widget(pagination, '.index')}}
+</div>
+{% endblock %}
+
+
+
+
+
+
+

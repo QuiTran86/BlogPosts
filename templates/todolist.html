@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% import 'macros.html' as macros %}
+{% block title %}Todo List{% endblock %}
+{% block body %}
+{{ super() }}
+<style>
+  h4 {text-align: center}
+</style>
+{% for item in todolist %}
+<h4>{{ macros.display_item(item) }}</h4>
+{% endfor %}
+{% endblock %}

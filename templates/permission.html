@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Flasky - Permission{% endblock %}
+{% block page_content %}
+<div class="page-header">
+  {% if (current_user.is_authenticated) and (current_user.email == 'tranvy2017@gmail.com') %}
+  <h1>Your permisson is {{ Permission.ADMIN }}</h1>
+  {% else %}
+  <h1>Your permisson is {{ Permission.FOLLOW }}</h1>
+  {% endif %}
+</div>
+{% endblock %}
