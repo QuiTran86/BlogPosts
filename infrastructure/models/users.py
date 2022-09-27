@@ -7,6 +7,7 @@ from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as JWS_Serializer
 
 from .. import db
+from infrastructure.models.roles import Role
 
 
 class User(UserMixin, db.Model):
@@ -26,6 +27,14 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False, unique=True)
     confirmed = db.Column(db.Boolean, default=False)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.role is None:
+            if self.email == current_app.config['FLASKY_ADMIN']:
+                self.role = Role.query.filter_by(name='Admin').first()
+            if self.role is None:
+                self.role = Role.query.filter_by(default=True).first()
 
     def __repr__(self):
         return f'{self.__class__.__name__}(username={self.username})'
