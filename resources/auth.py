@@ -1,9 +1,8 @@
 from flask import Blueprint, flash, redirect, url_for, render_template, request
-from flask_login import login_user
+from flask_login import login_user, current_user, login_required
 from assets.forms.users import RegisterForm, LoginForm
 from infrastructure.models.users import User
 from notifications.email import send_email
-from urllib.parse import urlparse, urljoin
 
 auth = Blueprint('auth', 'auth')
 
@@ -25,8 +24,15 @@ def register():
 
 
 @auth.route('/confirm/<token>')
+@login_required
 def confirm(token):
-    return f'{token}'
+    if current_user.confirmed:
+        return 'hello'
+    if current_user.confirm(token):
+        flash('Your confirmation successfully. Please try to login')
+    else:
+        flash('Your confirmation is invalid or token was expired')
+    return redirect(url_for('auth.login'))
 
 
 @auth.route('/login', methods=['GET', 'POST'])

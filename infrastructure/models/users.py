@@ -5,6 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import UserMixin, AnonymousUserMixin
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as JWS_Serializer
+from itsdangerous.exc import SignatureExpired
 
 from .. import db
 from infrastructure.models.roles import Role
@@ -57,6 +58,18 @@ class User(UserMixin, db.Model):
     def password(self, password):
         self.password_hash = generate_password_hash(password)
 
+    def confirm(self, token):
+        serializer = JWS_Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = serializer.loads(token.encode('utf-8'))
+        except SignatureExpired:
+            return False
+        if data.get('confirm') != self.id:
+            return False
+        self.confirmed = True
+        self.save()
+        return True
+
     def generate_confirmed_token(self):
         serializer = JWS_Serializer(secret_key=current_app.config['SECRET_KEY'],
                                     expires_in=self.CONFIRMED_TOKEN_EXPIRY)
@@ -85,3 +98,5 @@ class AnonymousUser(AnonymousUserMixin):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+login_manager.anonymous_user = AnonymousUser
