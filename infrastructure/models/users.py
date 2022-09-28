@@ -2,12 +2,15 @@ import hashlib
 
 from flask import current_app
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as JWS_Serializer
 
 from .. import db
 from infrastructure.models.roles import Role
+from domain.permission import Permission
+
+from app import login_manager
 
 
 class User(UserMixin, db.Model):
@@ -32,7 +35,7 @@ class User(UserMixin, db.Model):
         super().__init__(*args, **kwargs)
         if self.role is None:
             if self.email == current_app.config['FLASKY_ADMIN']:
-                self.role = Role.query.filter_by(name='Admin').first()
+                self.role = Role.query.filter_by(name=Permission.ADMIN).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
 
@@ -59,6 +62,26 @@ class User(UserMixin, db.Model):
                                     expires_in=self.CONFIRMED_TOKEN_EXPIRY)
         return serializer.dumps({'confirm': self.id}).decode('utf8')
 
+    def can_do(self, permission):
+        return self.role is not None and self.role.has_permission(permission)
+
+    def is_administrator(self):
+        return self.role.name == Permission.ADMIN
+
     def save(self):
         db.session.add(self)
         db.session.commit()
+
+
+class AnonymousUser(AnonymousUserMixin):
+
+    def can_do(self, permission):
+        return False
+
+    def is_administrator(self):
+        return False
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))

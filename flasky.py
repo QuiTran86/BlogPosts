@@ -1,7 +1,7 @@
 from app import create_app
 from infrastructure.models.roles import Role
 
-app = create_app('testing')
+app = create_app('development')
 
 
 @app.shell_context_processor
