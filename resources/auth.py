@@ -1,8 +1,9 @@
-from flask import Blueprint, flash, redirect, url_for, render_template, request
-from flask_login import login_user, current_user, login_required
+from flask import Blueprint, flash, redirect, url_for, render_template, request, session
+from flask_login import login_user, current_user, login_required, logout_user
 from assets.forms.users import RegisterForm, LoginForm
 from infrastructure.models.users import User
 from notifications.email import send_email
+from domain.permission import Permission
 
 auth = Blueprint('auth', 'auth')
 
@@ -26,8 +27,6 @@ def register():
 @auth.route('/confirm/<token>')
 @login_required
 def confirm(token):
-    if current_user.confirmed:
-        return 'hello'
     if current_user.confirm(token):
         flash('Your confirmation successfully. Please try to login')
     else:
@@ -50,6 +49,15 @@ def login():
     return render_template('auth/login.html', form=form)
 
 
-@auth.route('/reset_password', methods=['GET', 'POST'])
+@auth.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logout successfully!')
+    return redirect(url_for('.login'))
+
+@auth.route('/reset-password')
 def reset_password():
     pass
+
+
