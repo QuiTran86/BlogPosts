@@ -1,17 +1,16 @@
 import hashlib
+from datetime import datetime
 
 from flask import current_app
-from werkzeug.security import check_password_hash, generate_password_hash
-from flask_login import UserMixin, AnonymousUserMixin
-from datetime import datetime
+from flask_login import AnonymousUserMixin, UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as JWS_Serializer
 from itsdangerous.exc import SignatureExpired
-
-from .. import db
-from infrastructure.models.roles import Role
-from domain.permission import Permission
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import login_manager
+from domain.permission import Permission
+from infrastructure.models.roles import Role
+from .. import db
 
 
 class User(UserMixin, db.Model):
@@ -36,7 +35,7 @@ class User(UserMixin, db.Model):
         super().__init__(*args, **kwargs)
         if self.role is None:
             if self.email == current_app.config['FLASKY_ADMIN']:
-                self.role = Role.query.filter_by(name=Permission.ADMIN).first()
+                self.role = Role.query.filter_by(name='Admin').first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
 
@@ -98,4 +97,3 @@ class AnonymousUser(AnonymousUserMixin):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-

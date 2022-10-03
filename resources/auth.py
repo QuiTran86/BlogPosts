@@ -1,9 +1,9 @@
-from flask import Blueprint, flash, redirect, url_for, render_template, request, session
-from flask_login import login_user, current_user, login_required, logout_user
-from assets.forms.users import RegisterForm, LoginForm
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, login_user, logout_user
+
+from assets.forms.users import LoginForm, RegisterForm
 from infrastructure.models.users import User
 from notifications.email import send_email
-from domain.permission import Permission
 
 auth = Blueprint('auth', 'auth')
 
@@ -42,7 +42,7 @@ def login():
         if user is not None and user.verify_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             next_request = request.args.get('next')
-            if next_request and next_request.startswith('/'):
+            if next_request is None or (next_request and next_request.startswith('/')):
                 next_request = url_for('main.index')
             return redirect(next_request)
         flash('Invalid username or password')
@@ -56,8 +56,7 @@ def logout():
     flash('You have been logout successfully!')
     return redirect(url_for('.login'))
 
+
 @auth.route('/reset-password')
 def reset_password():
     pass
-
-

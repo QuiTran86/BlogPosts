@@ -5,7 +5,7 @@
 <table>
   <tr>
     <td>
-      <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=200) }}">
+      <img class="img-rounded profile-thumbnail" src="{{ user.avatar(size=200) }}">
     </td>
     <td>
       <div class="container">
@@ -28,31 +28,12 @@
           <p>
             Last seen: {{ moment(user.last_seen).fromNow() }}
           </p>
-          <p>
-            {% if current_user.can_do(Permission.FOLLOW) and current_user != user %}
-              {% if not current_user.is_following(user) %}
-                <a href="{{ url_for('.follow', username=user.username)}}"
-                class="btn btn-primary">Follow</a>
-              {% else %}
-                <a href="{{ url_for('.unfollow', username=username) }}"
-                class="btn btn-default">UnFollow</a>
-              {% endif%}
-            {% endif %}
-            <a href="{{ url_for('.followers', username=username) }}">
-              Followers: <span class="badge">{{ user.following.count() }}</span>
-            </a>
-            {% if current_user != user and current_user.is_followed_by(user) %}
-            <span class="badge">Following You</span>
-            {% endif %}
-          </p>
         </div>
       </div>
     </td>
   </tr>
 </table>
-{% if current_user.is_administrator %}
-<a class="btn btn-danger" href="{{ url_for('main.edit_profile_for_admin', id=user.id) }}">Edit Profile [Admin]</a>
-{% else %}
-<a class="btn btn-default" href="{{ url_for('main.edit_profile') }}">Edit Profile</a>
-{% endif %}
+
+<a class="btn btn-default" href="{{ url_for('main.update_profile') }}">Edit Profile</a>
+
 {% endblock %}
