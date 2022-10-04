@@ -38,6 +38,14 @@
   {{ wtf.quick_form(form) }}
   {% endif %}
 </div>
+<table>
+  {% for post in posts %}
+  {% include '_post.html' %}
+  {% endfor %}
+</table>
+<div class="pagination">
+  {{ macro.pagination_widget(pagination, '.index') }}
+</div>
 {% endblock %}
 
 

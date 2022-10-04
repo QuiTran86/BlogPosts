@@ -34,6 +34,9 @@
   </tr>
 </table>
 
+{% if user.is_administrator %}
+<a class="btn btn-danger" href="{{ url_for('main.update_profile_for_admin', id=user.id) }}">Edit Profile[Admin]</a>
+{% else %}
 <a class="btn btn-default" href="{{ url_for('main.update_profile') }}">Edit Profile</a>
-
+{% endif %}
 {% endblock %}

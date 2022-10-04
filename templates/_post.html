@@ -4,7 +4,7 @@
         <div class="page-header"></div>
       </div>
       <div class="profile-thumbnail"><a href="{{ url_for('.user', username=post.author.username) }}">
-        <img class="img-rounded profile-thumbnail" src="{{ post.author.gravatar(size=40) }}">
+        <img class="img-rounded profile-thumbnail" src="{{ post.author.avatar(size=40) }}">
       </a>
       </div>
       <div style="margin-left:10%;" class="post-body">
@@ -32,7 +32,7 @@
       </div>
       <div class="post-author"><a href="{{ url_for('.user', username=post.author.username)}}">{{
         post.author.username}}</a></div>
-      <div style="float: right;" class="post-timestamp">{{ moment(post.timestamp).fromNow() }}</div>
+      <div style="float: right;" class="post-timestamp">{{ moment(post.published_at).fromNow() }}</div>
     </td>
 
   </tr>

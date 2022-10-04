@@ -30,6 +30,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False, unique=True)
     confirmed = db.Column(db.Boolean, default=False)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
