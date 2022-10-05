@@ -2,7 +2,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, url_for, r
 from flask_login import current_user, login_required
 
 from assets.forms.password import PasswordResetForm
-from assets.forms.posts import PostForm
+from assets.forms.posts import PostForm, PostUpdatedForm
 from assets.forms.update_info import EditProfileForm, EditProfileAdminForm
 from domain.permission import Permission
 from infrastructure.models.posts import Post
@@ -22,8 +22,8 @@ def index():
         post.save()
         flash('Post is created successfully!')
         return redirect(url_for('.index'))
-    page_ind = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.published_at.desc()).paginate(page_ind, error_out=False,
+    page_index = request.args.get('page', 1, type=int)
+    pagination = Post.query.order_by(Post.published_at.desc()).paginate(page_index, error_out=False,
                                                                         per_page=current_app.config[
                                                                             'FLASKY_POST_PER_PAGES'])
     posts = pagination.items
@@ -31,8 +31,26 @@ def index():
 
 
 @main.route('/edit-post/<int:id>', methods=['GET', 'POST'])
+@login_required
 def edit_post(id):
-    return 'hello'
+    form = PostUpdatedForm()
+    post = Post.query.filter_by(id=id).first()
+    if form.validate_on_submit():
+        post.body = form.updated_content.data
+        post.save()
+        flash('Your post is updated successfully')
+        return redirect(url_for('.post', id=id))
+    form.updated_content.data = post.body
+    return render_template('edit_post.html', form=form)
+
+
+@main.route('/delete-post/<int:id>')
+def delete_post(id):
+    post = Post.query.filter_by(id=id).first()
+    if post:
+        post.delete()
+        flash('Your post is deleted successfully')
+    return redirect(url_for('.index'))
 
 
 @main.route('/post/<int:id>')
