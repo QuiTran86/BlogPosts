@@ -16,10 +16,12 @@ from .. import db
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
+    ALLOWED_EXTENSION = {'png', 'jpg', 'jpeg'}
     CONFIRMED_TOKEN_EXPIRY = 300
     GRAVATAR_SERVICE_URI = 'https://secure.gravatar.com/avatar'
 
     id = db.Column(db.Integer, primary_key=True)
+    avatar_file = db.Column(db.String(100))
     name = db.Column(db.String(64))
     location = db.Column(db.String(100))
     bio = db.Column(db.Text())
@@ -80,6 +82,9 @@ class User(UserMixin, db.Model):
 
     def is_administrator(self):
         return self.role.name == Permission.ADMIN
+
+    def is_valid_media_file(self, filename):
+        return '.' in filename and filename.rsplit('.', 1)[1] in self.ALLOWED_EXTENSION
 
     def save(self):
         db.session.add(self)

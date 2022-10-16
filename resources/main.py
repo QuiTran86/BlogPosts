@@ -1,9 +1,14 @@
+import os.path
+
 from flask import Blueprint, abort, flash, redirect, render_template, url_for, request, current_app
 from flask_login import current_user, login_required
+from werkzeug.utils import secure_filename
 
+import app
 from assets.forms.password import PasswordResetForm
 from assets.forms.posts import PostForm, PostUpdatedForm
 from assets.forms.update_info import EditProfileForm, EditProfileAdminForm
+from assets.forms.avatar import AvatarUpdatedForm
 from domain.permission import Permission
 from infrastructure.models.posts import Post
 from infrastructure.models.users import User
@@ -123,6 +128,30 @@ def user(username):
     if not user_md:
         abort(404)
     return render_template('user.html', user=user_md)
+
+
+@main.route('/change-avatar', methods=['GET', 'POST'])
+@login_required
+def change_avatar():
+    form = AvatarUpdatedForm()
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash("No submitted file!")
+            return redirect(request.url)
+        file = request.files['file']
+
+        if not file.filename:
+            flash("Not selected file!")
+            return redirect(url_for(request.url))
+
+        if file and current_user.is_valid_media_file(file.filename):
+            filename = f'{current_user.username}-{secure_filename(file.filename)}'
+            file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+            current_user.avatar_file = filename
+            current_user.save()
+            flash('Updated avatar successfully!')
+            return redirect(url_for('.user', username=current_user.username))
+    return render_template("update_avatar.html", form=form)
 
 
 @main.route('/admin')

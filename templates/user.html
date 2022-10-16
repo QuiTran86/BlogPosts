@@ -5,7 +5,11 @@
 <table>
   <tr>
     <td>
+      {% if user.avatar_file %}
+      <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename=user.avatar_file) }}" width="200" height="200">
+      {% else %}
       <img class="img-rounded profile-thumbnail" src="{{ user.avatar(size=200) }}">
+      {% endif %}
     </td>
     <td>
       <div class="container">
@@ -39,4 +43,5 @@
 {% else %}
 <a class="btn btn-default" href="{{ url_for('main.update_profile') }}">Edit Profile</a>
 {% endif %}
+<a class="btn btn-default" href="{{ url_for('main.change_avatar') }}">Update Avatar</a>
 {% endblock %}
