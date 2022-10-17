@@ -6,7 +6,8 @@
   <tr>
     <td>
       {% if user.avatar_file %}
-      <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename=user.avatar_file) }}" width="200" height="200">
+      <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename=user.avatar_file) }}" width="200"
+           height="200">
       {% else %}
       <img class="img-rounded profile-thumbnail" src="{{ user.avatar(size=200) }}">
       {% endif %}
@@ -32,6 +33,22 @@
           <p>
             Last seen: {{ moment(user.last_seen).fromNow() }}
           </p>
+          <p>
+            Statuses: <span class="badge">{{ user.posts.count() }}</span>
+          </p>
+          {% if current_user.can_do(Permission.FOLLOW) and user != current_user %}
+          {% if not current_user.is_following(user) %}
+          <a href="{{ url_for('.follow', username=user.username )}}" class="btn btn-primary">Follow</a>
+          {% else %}
+          <a href="{{ url_for('.unfollow', username=user.username )}}" class="btn btn-default">UnFollow</a>
+          {% endif %}
+          {% endif %}
+          <a href="{{ url_for('.followers', username=user.username) }}"><span
+              class="badge">Followers: {{ user.followers.count() }}</span>
+          </a>
+          <a href="{{ url_for('.followed', username=user.username) }}"><span
+              class="badge">Followings: {{ user.followed.count() }}</span>
+          </a>
         </div>
       </div>
     </td>

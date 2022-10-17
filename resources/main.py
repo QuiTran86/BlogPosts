@@ -14,7 +14,7 @@ from domain.permission import Permission
 from infrastructure.models.posts import Post
 from infrastructure.models.users import User
 from infrastructure.models.roles import Role
-from utils.decorators import admin_required, moderator_required
+from utils.decorators import admin_required, moderator_required, follow_required
 
 main = Blueprint('main', 'main')
 
@@ -165,6 +165,52 @@ def change_email():
         flash('Updated email successfully')
         return redirect(url_for('.user', username=current_user.username))
     return render_template('update_email.html', form=form)
+
+
+@main.route('/follow/<username>')
+@login_required
+@follow_required
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        flash('Invalid user')
+        return redirect(url_for('.index'))
+
+    if current_user.is_following(user):
+        flash('You are following this user already')
+        return redirect(url_for('.user', username=username))
+
+    current_user.follow(user)
+    flash('You are now following user!')
+    return redirect(url_for('.user', username=username))
+
+
+@main.route('/followers/<username>')
+@login_required
+def followers(username):
+    pass
+
+
+@main.route('/followed/<username>')
+@login_required
+def followed(username):
+    pass
+
+
+@main.route('/unfollow/<username>')
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        flash('Invalid user')
+        return redirect(url_for('.index'))
+
+    if not current_user.is_following(user):
+        flash('You are not following this user')
+        return redirect(url_for('.user', username=username))
+
+    current_user.unfollow(user)
+    flash('You are now un follow this user!')
+    return redirect(url_for('.user', username=username))
 
 
 @main.route('/admin')

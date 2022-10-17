@@ -23,5 +23,9 @@ def admin_required(f):
     return permission_require(Permission.ADMIN)(f)
 
 
+def follow_required(f):
+    return permission_require(Permission.FOLLOW)(f)
+
+
 def moderator_required(f):
     return permission_require(Permission.MODERATE)(f)
