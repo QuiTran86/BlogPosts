@@ -43,5 +43,8 @@
 {% else %}
 <a class="btn btn-default" href="{{ url_for('main.update_profile') }}">Edit Profile</a>
 {% endif %}
+
+{% if current_user.username == user.username %}
 <a class="btn btn-default" href="{{ url_for('main.change_avatar') }}">Update Avatar</a>
+{% endif %}
 {% endblock %}

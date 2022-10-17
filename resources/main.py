@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 import app
 from assets.forms.password import PasswordResetForm
 from assets.forms.posts import PostForm, PostUpdatedForm
+from assets.forms.users import EmailUpdatedForm
 from assets.forms.update_info import EditProfileForm, EditProfileAdminForm
 from assets.forms.avatar import AvatarUpdatedForm
 from domain.permission import Permission
@@ -152,6 +153,18 @@ def change_avatar():
             flash('Updated avatar successfully!')
             return redirect(url_for('.user', username=current_user.username))
     return render_template("update_avatar.html", form=form)
+
+
+@main.route('/change-email', methods=['GET', 'POST'])
+@login_required
+def change_email():
+    form = EmailUpdatedForm()
+    if form.validate_on_submit():
+        current_user.email = form.new_email.data
+        current_user.save()
+        flash('Updated email successfully')
+        return redirect(url_for('.user', username=current_user.username))
+    return render_template('update_email.html', form=form)
 
 
 @main.route('/admin')
