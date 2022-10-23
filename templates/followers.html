@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Flasky - {{ title }} {{ user.username }}{% endblock %}
+{% block page_content %}
+{% for follower in follows %}
+{% include "_followers.html" %}
+{% endfor %}
+{% endblock %}

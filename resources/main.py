@@ -188,13 +188,33 @@ def follow(username):
 @main.route('/followers/<username>')
 @login_required
 def followers(username):
-    pass
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        flash('Invalid user!')
+        return redirect(url_for('.index'))
+    page_ind = request.args.get('page', 1, type=int)
+    pagination = user.followers.paginate(page_ind,
+                                         per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
+                                         error_out=False)
 
+    follows = [{'user': item.follower} for item in pagination.items]
+    return render_template('followers.html', pagination=pagination, follows=follows,
+                           title='Followers of', user=user)
 
 @main.route('/followed/<username>')
 @login_required
 def followed(username):
-    pass
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        flash('Invalid user!')
+        return redirect(url_for('.index'))
+    page_ind = request.args.get('page', 1, type=int)
+    pagination = user.followed.paginate(page_ind,
+                                        per_page=current_app.config['FLASKY_FOLLOWEDS_PER_PAGE'],
+                                        error_out=False)
+    follows = [{'user': item.followed} for item in pagination.items]
+    return render_template('followed.html', pagination=pagination, follows=follows,
+                           title='Followed of', user=user)
 
 
 @main.route('/unfollow/<username>')

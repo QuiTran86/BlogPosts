@@ -1,0 +1,19 @@
+<tr>
+    <td>
+      <div class="container">
+        <div class="page-header"></div>
+      </div>
+
+      {% if followed['user'].avatar_file %}
+      <img class="img-rounded profile-thumbnail" src="{{ url_for('static', filename=followed['user'].avatar_file) }}" width="40" height="40">
+      {% else %}
+      <img class="img-rounded profile-thumbnail" src="{{ followed['user'].avatar(size=40) }}">
+      {% endif %}
+      </a>
+
+      <div style="margin-left:10%;" class="follower-body">
+        {{ followed['user'].username }}
+      </div>
+    </td>
+
+  </tr>
