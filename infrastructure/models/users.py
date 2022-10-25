@@ -9,8 +9,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import login_manager
 from domain.permission import Permission
-from infrastructure.models.roles import Role
+from infrastructure.models.posts import Post
 from infrastructure.models.relationship import Follow
+from infrastructure.models.roles import Role
 from .. import db
 
 
@@ -56,16 +57,8 @@ class User(UserMixin, db.Model):
         code = hashlib.md5(self.email.encode('utf8')).hexdigest()
         return f'{self.GRAVATAR_SERVICE_URI}/{code}?s={size}&d={default}'
 
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-    @property
-    def password(self):
-        raise AttributeError('Attribute password can not be accessed!')
-
-    @password.setter
-    def password(self, password):
-        self.password_hash = generate_password_hash(password)
+    def can_do(self, permission):
+        return self.role is not None and self.role.has_permission(permission)
 
     def confirm(self, token):
         serializer = JWS_Serializer(current_app.config['SECRET_KEY'])
@@ -79,41 +72,54 @@ class User(UserMixin, db.Model):
         self.save()
         return True
 
-    def generate_confirmed_token(self):
-        serializer = JWS_Serializer(secret_key=current_app.config['SECRET_KEY'],
-                                    expires_in=self.CONFIRMED_TOKEN_EXPIRY)
-        return serializer.dumps({'confirm': self.id}).decode('utf8')
-
-    def can_do(self, permission):
-        return self.role is not None and self.role.has_permission(permission)
-
     def follow(self, user):
         if not self.is_following(user):
             f = Follow(follower=self, followed=user)
             db.session.add(f)
             db.session.commit()
 
-    def unfollow(self, user):
-        f = self.followed.filter_by(followed_id=user.id).first()
-        if f:
-            db.session.delete(f)
-            db.session.commit()
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id).filter(
+            Follow.followed_id == self.id)
 
-    def is_following(self, user):
-        if user.id is None:
-            return False
-        return self.followed.filter_by(followed_id=user.id).first() is not None
+    def is_administrator(self):
+        return self.role.name == Permission.ADMIN
 
     def is_followed_by(self, user):
         if user.id is None:
             return False
         return self.followers.filter_by(follower_id=user.id).first() is None
 
-    def is_administrator(self):
-        return self.role.name == Permission.ADMIN
+    def is_following(self, user):
+        if user.id is None:
+            return False
+        return self.followed.filter_by(followed_id=user.id).first() is not None
 
     def is_valid_media_file(self, filename):
         return '.' in filename and filename.rsplit('.', 1)[1] in self.ALLOWED_EXTENSION
+
+    def generate_confirmed_token(self):
+        serializer = JWS_Serializer(secret_key=current_app.config['SECRET_KEY'],
+                                    expires_in=self.CONFIRMED_TOKEN_EXPIRY)
+        return serializer.dumps({'confirm': self.id}).decode('utf8')
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    @property
+    def password(self):
+        raise AttributeError('Attribute password can not be accessed!')
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def unfollow(self, user):
+        f = self.followed.filter_by(followed_id=user.id).first()
+        if f:
+            db.session.delete(f)
+            db.session.commit()
 
     def save(self):
         db.session.add(self)

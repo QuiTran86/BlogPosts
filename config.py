@@ -14,6 +14,8 @@ class Config:
     MAIL_PORT = os.getenv('MAIL_PORT')
     MAIL_USE_TLS = os.getenv('MAIL_USE_TLS')
 
+    EXPIRY_TIME = 30 * 24 * 60 * 60
+
     FLASKY_POST_PER_PAGES = 10
     FLASKY_FOLLOWERS_PER_PAGE = 20
     FLASKY_FOLLOWEDS_PER_PAGE = 20

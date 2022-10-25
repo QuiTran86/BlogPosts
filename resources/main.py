@@ -1,20 +1,20 @@
 import os.path
 
-from flask import Blueprint, abort, flash, redirect, render_template, url_for, request, current_app
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for, \
+    make_response
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
-import app
+from assets.forms.avatar import AvatarUpdatedForm
 from assets.forms.password import PasswordResetForm
 from assets.forms.posts import PostForm, PostUpdatedForm
+from assets.forms.update_info import EditProfileAdminForm, EditProfileForm
 from assets.forms.users import EmailUpdatedForm
-from assets.forms.update_info import EditProfileForm, EditProfileAdminForm
-from assets.forms.avatar import AvatarUpdatedForm
 from domain.permission import Permission
 from infrastructure.models.posts import Post
-from infrastructure.models.users import User
 from infrastructure.models.roles import Role
-from utils.decorators import admin_required, moderator_required, follow_required
+from infrastructure.models.users import User
+from utils.decorators import admin_required, follow_required, moderator_required
 
 main = Blueprint('main', 'main')
 
@@ -28,12 +28,37 @@ def index():
         post.save()
         flash('Post is created successfully!')
         return redirect(url_for('.index'))
+
+    show_followed = False
+    if current_user.is_authenticated:
+        show_followed = bool(request.cookies.get('show_followed', ''))
+
+    if show_followed:
+        query = current_user.followed_posts
+    else:
+        query = Post.query
     page_index = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.published_at.desc()).paginate(page_index, error_out=False,
-                                                                        per_page=current_app.config[
-                                                                            'FLASKY_POST_PER_PAGES'])
+    pagination = query.order_by(Post.published_at.desc()).paginate(page_index, error_out=False,
+                                                                   per_page=current_app.config[
+                                                                       'FLASKY_POST_PER_PAGES'])
     posts = pagination.items
     return render_template('index.html', form=form, pagination=pagination, posts=posts)
+
+
+@main.route('/all')
+@login_required
+def show_all():
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('show_followed', '', max_age=current_app.config['EXPIRY_TIME'])
+    return resp
+
+
+@main.route('/followed')
+@login_required
+def show_followed():
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('show_followed', '1', max_age=current_app.config['EXPIRY_TIME'])
+    return resp
 
 
 @main.route('/edit-post/<int:id>', methods=['GET', 'POST'])
@@ -200,6 +225,7 @@ def followers(username):
     follows = [{'user': item.follower} for item in pagination.items]
     return render_template('followers.html', pagination=pagination, follows=follows,
                            title='Followers of', user=user)
+
 
 @main.route('/followed/<username>')
 @login_required

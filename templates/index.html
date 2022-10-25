@@ -38,6 +38,16 @@
   {{ wtf.quick_form(form) }}
   {% endif %}
 </div>
+<ul class="nav">
+  <li class="nav-item">
+    <a class="nav-link active" aria-current="page" href="{{ url_for('main.show_all')}}">All</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" aria-current="page" href="{{ url_for('main.show_followed')}}">Followed</a>
+  </li>
+</ul>
+
+
 <table>
   {% for post in posts %}
   {% include '_post.html' %}
