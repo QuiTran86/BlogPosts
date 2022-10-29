@@ -81,7 +81,7 @@ class User(UserMixin, db.Model):
     @property
     def followed_posts(self):
         return Post.query.join(Follow, Follow.followed_id == Post.author_id).filter(
-            Follow.followed_id == self.id)
+            Follow.follower_id == self.id)
 
     def is_administrator(self):
         return self.role.name == Permission.ADMIN
