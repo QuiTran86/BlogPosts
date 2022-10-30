@@ -12,3 +12,8 @@ class PostForm(FlaskForm):
 class PostUpdatedForm(FlaskForm):
     updated_content = PageDownField('Post', validators=[DataRequired()])
     submit = SubmitField('Submit')
+
+
+class CommentForm(FlaskForm):
+    body = PageDownField('Reply', validators=[DataRequired()])
+    submit = SubmitField('Submit')

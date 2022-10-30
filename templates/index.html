@@ -16,9 +16,17 @@
 
 {% block content %}
 <style>
-  h1 {text-align: center;}
-  h2 {text-align: center;}
-  h4 {text-align: right;}
+  h1 {
+    text-align: center;
+  }
+
+  h2 {
+    text-align: center;
+  }
+
+  h4 {
+    text-align: right;
+  }
 
 </style>
 <div class="container">
@@ -38,15 +46,27 @@
   {{ wtf.quick_form(form) }}
   {% endif %}
 </div>
-<ul class="nav">
-  <li class="nav-item">
-    <a class="nav-link active" aria-current="page" href="{{ url_for('main.show_all')}}">All</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link active" aria-current="page" href="{{ url_for('main.show_followed')}}">Followed</a>
-  </li>
-</ul>
 
+<div class="w3-container">
+  <div class="w3-row">
+    <a href="/all" onclick="showPost(event, 'allPosts');">
+      <div class="w3-third tablink w3-bottombar w3-hover-light-grey w3-padding">
+        All Posts
+      </div>
+    </a>
+    <a href="/followed" onclick="showPost(event, 'followedPosts');">
+      <div class="w3-third tablink w3-bottombar w3-hover-light-grey w3-padding">
+        Followed posts
+      </div>
+    </a>
+  </div>
+
+  <div id="allPosts" class="w3-container posts" style="display: none">
+  </div>
+
+  <div id="followedPosts" class="w3-container posts" style="display: none">
+  </div>
+</div>
 
 <table>
   {% for post in posts %}
@@ -56,6 +76,25 @@
 <div class="pagination">
   {{ macro.pagination_widget(pagination, '.index') }}
 </div>
+
+<script>
+  function showPost(evt, posts) {
+    var i, x, tablinks;
+    x = document.getElementsByClassName("posts");
+    for (i = 0; i < x.length; i++) {
+      x[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablink");
+    for (i = 0; i < x.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" w3-border-green", "");
+    }
+    document.getElementById(posts).style.display = "block";
+    evt.currentTarget.firstElementChild.className += " w3-border-green";
+
+  }
+
+
+</script>
 {% endblock %}
 
 
