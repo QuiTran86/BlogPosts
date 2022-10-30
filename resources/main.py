@@ -7,11 +7,11 @@ from werkzeug.utils import secure_filename
 
 from assets.forms.avatar import AvatarUpdatedForm
 from assets.forms.password import PasswordResetForm
-from assets.forms.posts import PostForm, PostUpdatedForm
+from assets.forms.posts import PostForm, PostUpdatedForm, CommentForm
 from assets.forms.update_info import EditProfileAdminForm, EditProfileForm
 from assets.forms.users import EmailUpdatedForm
 from domain.permission import Permission
-from infrastructure.models.posts import Post
+from infrastructure.models.posts import Post, Comment
 from infrastructure.models.roles import Role
 from infrastructure.models.users import User
 from utils.decorators import admin_required, follow_required, moderator_required
@@ -61,6 +61,25 @@ def show_followed():
     return resp
 
 
+@main.route('/delete/comment/<int:id>')
+@login_required
+def delete_comment(id):
+    comment = Comment.query.get_or_404(id)
+    if not comment:
+        flash('Comment is not found')
+        return redirect(url_for('.index'))
+    comment.delete()
+    flash('Deleted comment successfully')
+    return redirect(url_for('.index'))
+
+
+@main.route('/edit-comment/<int:id>', methods=['GET', 'POST'])
+@login_required
+@moderator_required
+def edit_comment(id):
+    return 'Hello'
+
+
 @main.route('/edit-post/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_post(id):
@@ -84,10 +103,25 @@ def delete_post(id):
     return redirect(url_for('.index'))
 
 
-@main.route('/post/<int:id>')
+@main.route('/post/<int:id>', methods=['GET', 'POST'])
 def post(id):
     post = Post.query.get_or_404(id)
-    return render_template('post.html', posts=[post])
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data, post=post, author=current_user._get_current_object())
+        comment.save()
+        flash('Your comment was created successfully')
+        return redirect(url_for('.post', id=id, page=-1))
+    page = request.args.get('page', 1, type=int)
+    cms_per_page = current_app.config['FLASK_COMMENTS_PER_PAGE']
+    if page == -1:
+        page = (post.comments.count() // cms_per_page)
+    query = post.comments.order_by(Comment.created_at.desc())
+    pagination = query.paginate(page, per_page=current_app.config['FLASK_COMMENTS_PER_PAGE'],
+                                error_out=False)
+    comments = pagination.items
+    return render_template('post.html', posts=[post], form=form, comments=comments,
+                           pagination=pagination)
 
 
 @main.route('/update-password', methods=['GET', 'POST'])

@@ -1,7 +1,25 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 {% block title %}Flasky - Post{% endblock %}
 {% block page_content %}
 {% for post in posts %}
 {% include "_post.html" %}
+
+<div class="container">
+  <div class="page-header">
+  </div>
+</div>
+<h4 id="comments">Comments</h4>
 {% endfor %}
+<div class="col-md-18">
+  {{ wtf.quick_form(form) }}
+</div>
+{% for comment in comments %}
+{% include "_comment.html" %}
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
 {% endblock %}

@@ -2,6 +2,8 @@ import os
 
 
 class Config:
+    FLASK_COMMENTS_PER_PAGE = 10
+
     DEBUG = False
     SECRET_KEY = os.getenv('SECRET_KEY')
     FLASKY_ADMIN = os.getenv('FLASKY_ADMIN')
@@ -19,7 +21,6 @@ class Config:
     FLASKY_POST_PER_PAGES = 10
     FLASKY_FOLLOWERS_PER_PAGE = 20
     FLASKY_FOLLOWEDS_PER_PAGE = 20
-
 
     UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER')
 
