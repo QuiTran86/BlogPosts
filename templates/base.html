@@ -31,6 +31,9 @@
         <li><a href="/user/{{ current_user.username }}">Profile</a></li>
         <li><a href="/change-email">Update Email</a></li>
         <li><a href="/change-avatar">Update Avatar</a></li>
+        {% if not current_user.is_anonymous and current_user.can_do(Permission.MODERATE) %}
+        <li><a href="{{ url_for('main.moderator') }}">Moderate Comments</a></li>
+        {% endif %}
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if current_user.is_authenticated %}

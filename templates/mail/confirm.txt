@@ -4,7 +4,7 @@ Welcome to Flasky!
 
 To activate your account, please click to the following link:
 
-{{ url_for('auth.confirm', token=token, _external=True) }}
+{{ url_for('auth.confirm', email=user.email, token=token, _external=True) }}
 
 Sincerely,
 

@@ -84,6 +84,10 @@ class User(UserMixin, db.Model):
         return Post.query.join(Follow, Follow.followed_id == Post.author_id).filter(
             Follow.follower_id == self.id)
 
+    def mark_as_forgot_password(self):
+        self.confirmed = False
+        self.save()
+
     def is_administrator(self):
         return self.role.name == Permission.ADMIN
 

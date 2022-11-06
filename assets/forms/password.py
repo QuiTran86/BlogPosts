@@ -1,25 +1,24 @@
-from flask_login import current_user
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, SubmitField
-from wtforms.validators import DataRequired, EqualTo, ValidationError
-
-from infrastructure.models.users import User
+from wtforms import PasswordField, StringField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 
 
-class PasswordResetForm(FlaskForm):
+class PasswordUpdateForm(FlaskForm):
     MESSAGE_NEW_PASSWORD_CONFIRMED = 'Should match to desired password.'
 
-    password = PasswordField('Current Password', validators=[DataRequired()])
     password1 = PasswordField('New Password', validators=[DataRequired()])
     password2 = PasswordField('Confirm New Password',
                               validators=[DataRequired(), EqualTo('password1',
                                                                   message=MESSAGE_NEW_PASSWORD_CONFIRMED)])
     submit = SubmitField('Submit')
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user = User.query.filter_by(email=current_user.email).first()
 
-    def validate_password(self, field):
-        if not self.user.verify_password(field.data):
-            raise ValidationError('Current password is not correct!')
+class PasswordResetForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Length(1, 65), Email()])
+    submit = SubmitField('Submit')
+
+    def validate_email(self, field):
+        from infrastructure.models.users import User
+        user = User.query.filter_by(email=field.data).first()
+        if not user:
+            raise ValidationError('Please register your email for using your app')

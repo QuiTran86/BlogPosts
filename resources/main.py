@@ -1,17 +1,16 @@
 import os.path
 
-from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for, \
-    make_response
+from flask import Blueprint, abort, current_app, flash, make_response, redirect, render_template, \
+    request, url_for
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
 from assets.forms.avatar import AvatarUpdatedForm
-from assets.forms.password import PasswordResetForm
-from assets.forms.posts import PostForm, PostUpdatedForm, CommentForm
+from assets.forms.posts import CommentForm, PostForm, PostUpdatedForm
 from assets.forms.update_info import EditProfileAdminForm, EditProfileForm
 from assets.forms.users import EmailUpdatedForm
 from domain.permission import Permission
-from infrastructure.models.posts import Post, Comment
+from infrastructure.models.posts import Comment, Post
 from infrastructure.models.roles import Role
 from infrastructure.models.users import User
 from utils.decorators import admin_required, follow_required, moderator_required
@@ -122,18 +121,6 @@ def post(id):
     comments = pagination.items
     return render_template('post.html', posts=[post], form=form, comments=comments,
                            pagination=pagination)
-
-
-@main.route('/update-password', methods=['GET', 'POST'])
-@login_required
-def update_password():
-    form = PasswordResetForm()
-    if form.validate_on_submit():
-        current_user.password = form.password2.data
-        current_user.save()
-        flash('Your password is updated successfully!')
-        return redirect(url_for('main.index'))
-    return render_template('updated_password.html', form=form)
 
 
 @main.route('/update-profile', methods=['GET', 'POST'])
