@@ -13,6 +13,7 @@ from domain.permission import Permission
 from infrastructure.models.posts import Comment, Post
 from infrastructure.models.roles import Role
 from infrastructure.models.users import User
+from services.posts import PostService
 from utils.decorators import admin_required, follow_required, moderator_required
 
 main = Blueprint('main', 'main')
@@ -112,11 +113,11 @@ def post(id):
         flash('Your comment was created successfully')
         return redirect(url_for('.post', id=id, page=-1))
     page = request.args.get('page', 1, type=int)
-    cms_per_page = current_app.config['FLASK_COMMENTS_PER_PAGE']
+    cms_per_page = current_app.config['FLASKY_COMMENTS_PER_PAGE']
     if page == -1:
         page = (post.comments.count() // cms_per_page)
     query = post.comments.order_by(Comment.created_at.desc())
-    pagination = query.paginate(page, per_page=current_app.config['FLASK_COMMENTS_PER_PAGE'],
+    pagination = query.paginate(page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
                                 error_out=False)
     comments = pagination.items
     return render_template('post.html', posts=[post], form=form, comments=comments,
@@ -287,11 +288,36 @@ def admin():
     return 'For admin only'
 
 
-@main.route('/moderator')
+@main.route('/moderate')
 @login_required
 @moderator_required
-def moderator():
-    return 'For moderator only'
+def moderate():
+    page = request.args.get('page', 1, type=int)
+    pagination = Comment.query.order_by(Comment.created_at.desc()).paginate(page,
+                                                                            per_page=
+                                                                            current_app.config[
+                                                                                'FLASKY_COMMENTS_PER_PAGE'],
+                                                                            error_out=False)
+    comments = pagination.items
+    return render_template('moderate.html', comments=comments, pagination=pagination, page=page)
+
+
+@main.route('/moderate/enable/<int:id>')
+@login_required
+@moderator_required
+def moderate_enable(id):
+    ps = PostService()
+    ps.mark_comment_as_enable_state(id)
+    return redirect(url_for('.moderate', page=request.args.get('page', 1, type=int)))
+
+
+@main.route('/moderate/disable/<int:id>')
+@login_required
+@moderator_required
+def moderate_disable(id):
+    ps = PostService()
+    ps.mark_comment_as_disable_state(id)
+    return redirect(url_for('.moderate', page=request.args.get('page', 1, type=int)))
 
 
 @main.app_context_processor

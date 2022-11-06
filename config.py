@@ -2,7 +2,7 @@ import os
 
 
 class Config:
-    FLASK_COMMENTS_PER_PAGE = 10
+    FLASKY_COMMENTS_PER_PAGE = 10
 
     DEBUG = False
     SECRET_KEY = os.getenv('SECRET_KEY')
